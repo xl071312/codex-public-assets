@@ -23,6 +23,19 @@ jobs:
           base64 -d /tmp/LumiDeskPet.b64 > /tmp/LumiDeskPet.zip
           echo "9eb0bb23ce02af69cd8d7e44b9e02ec672b07149b7950097a6e82d03e14bad6a  /tmp/LumiDeskPet.zip" | sha256sum -c -
           unzip -q /tmp/LumiDeskPet.zip
+      - name: Enable wallpaper touch interaction
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('LumiDeskPet/app/src/main/java/com/lumi/deskpet/LumiWallpaperService.java')
+          s = p.read_text()
+          needle = '    class LumiEngine extends Engine {\n'
+          patch = '        LumiEngine(){ setTouchEventsEnabled(true); }\n'
+          if patch not in s:
+              s = s.replace(needle, needle + patch, 1)
+          p.write_text(s)
+          assert patch in p.read_text()
+          PY
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -40,5 +53,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: LumiDeskPet-debug
+          name: LumiDeskPet-v0.1.1-debug
           path: LumiDeskPet/app/build/outputs/apk/debug/app-debug.apk
