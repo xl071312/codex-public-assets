@@ -4,7 +4,7 @@ on:
   push:
     branches: [lumi-android-mvp]
     paths:
-      - 'LumiDeskPet-source-v0.1.zip.b64'
+      - 'lumi_chunks/**'
       - '.github/workflows/lumi-android-build.yml'
   workflow_dispatch:
 
@@ -13,9 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Restore source tree
+      - name: Restore verified source tree
         run: |
-          base64 -d LumiDeskPet-source-v0.1.zip.b64 > /tmp/LumiDeskPet.zip
+          cat lumi_chunks/part*.b64 > /tmp/LumiDeskPet.b64
+          test "$(wc -c < /tmp/LumiDeskPet.b64)" -eq 21868
+          echo "7407c4be7fe27f6b3c71f7107b0389e75bfce883351cdb4cfe327243d6fbc93b  /tmp/LumiDeskPet.b64" | sha256sum -c -
+          base64 -d /tmp/LumiDeskPet.b64 > /tmp/LumiDeskPet.zip
+          echo "9eb0bb23ce02af69cd8d7e44b9e02ec672b07149b7950097a6e82d03e14bad6a  /tmp/LumiDeskPet.zip" | sha256sum -c -
           unzip -q /tmp/LumiDeskPet.zip
       - uses: actions/setup-java@v4
         with:
